@@ -3,13 +3,12 @@
 spawn-fcgi
 ==========
 
-:authors: Jan Kneschke, Stefan Bühler
+:thanks: Jan Kneschke, Stefan Bühler
 
-:homepage:
-  http://redmine.lighttpd.net/projects/spawn-fcgi
+:spawn-fcgi is from http://redmine.lighttpd.net/projects/spawn-fcgi
 
 :abstract:
-  spawn-fcgi is used to spawn FastCGI applications
+  spawn-fcgi is used to spawn monitor process.
 
 Features
 --------
