@@ -1,0 +1,35 @@
+K 25
+svn:wc:ra_dav:version-url
+V 61
+/svn/cas/!svn/ver/1303/trunk/third_party/spawn-fcgi-1.6.3/doc
+END
+Makefile.in
+K 25
+svn:wc:ra_dav:version-url
+V 73
+/svn/cas/!svn/ver/1303/trunk/third_party/spawn-fcgi-1.6.3/doc/Makefile.in
+END
+Makefile.am
+K 25
+svn:wc:ra_dav:version-url
+V 73
+/svn/cas/!svn/ver/1303/trunk/third_party/spawn-fcgi-1.6.3/doc/Makefile.am
+END
+run-php
+K 25
+svn:wc:ra_dav:version-url
+V 69
+/svn/cas/!svn/ver/1303/trunk/third_party/spawn-fcgi-1.6.3/doc/run-php
+END
+run-rails
+K 25
+svn:wc:ra_dav:version-url
+V 71
+/svn/cas/!svn/ver/1303/trunk/third_party/spawn-fcgi-1.6.3/doc/run-rails
+END
+run-generic
+K 25
+svn:wc:ra_dav:version-url
+V 73
+/svn/cas/!svn/ver/1303/trunk/third_party/spawn-fcgi-1.6.3/doc/run-generic
+END
