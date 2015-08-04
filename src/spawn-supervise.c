@@ -77,7 +77,7 @@ static int issetugid() {
 #define PACKAGE_FEATURES ""
 #endif
 
-#define PACKAGE_DESC "spawn-fcgi v" PACKAGE_VERSION PACKAGE_FEATURES " - spawns FastCGI processes\n"
+#define PACKAGE_DESC "spawn-supervise v" PACKAGE_VERSION PACKAGE_FEATURES " - spawns FastCGI processes\n"
 
 #define CONST_STR_LEN(s) s, sizeof(s) - 1
 
@@ -112,12 +112,12 @@ static int bind_socket(const char *addr, unsigned short port, unsigned int backl
 		 * as if we delete the socket-file and rebind there will be no "socket already in use" error
 		 */
 		if (-1 == (fcgi_fd = socket(socket_type, SOCK_STREAM, 0))) {
-			fprintf(stderr, "spawn-fcgi: couldn't create socket: %s\n", strerror(errno));
+			fprintf(stderr, "spawn-supervise: couldn't create socket: %s\n", strerror(errno));
 			return -1;
 		}
 
 		if (0 == connect(fcgi_fd, fcgi_addr, servlen)) {
-			fprintf(stderr, "spawn-fcgi: socket is already in use, can't spawn\n");
+			fprintf(stderr, "spawn-supervise: socket is already in use, can't spawn\n");
 			close(fcgi_fd);
 			return -1;
 		}
@@ -128,7 +128,7 @@ static int bind_socket(const char *addr, unsigned short port, unsigned int backl
 			case ENOENT:
 				break;
 			default:
-				fprintf(stderr, "spawn-fcgi: removing old socket failed: %s\n", strerror(errno));
+				fprintf(stderr, "spawn-supervise: removing old socket failed: %s\n", strerror(errno));
 				return -1;
 			}
 		}
@@ -161,12 +161,12 @@ static int bind_socket(const char *addr, unsigned short port, unsigned int backl
 			fcgi_addr = (struct sockaddr *) &fcgi_addr_in6;
 #endif
 		} else {
-			fprintf(stderr, "spawn-fcgi: '%s' is not a valid IP address\n", addr);
+			fprintf(stderr, "spawn-supervise: '%s' is not a valid IP address\n", addr);
 			return -1;
 #else
 		} else {
 			if ((in_addr_t)(-1) == (fcgi_addr_in.sin_addr.s_addr = inet_addr(addr))) {
-				fprintf(stderr, "spawn-fcgi: '%s' is not a valid IPv4 address\n", addr);
+				fprintf(stderr, "spawn-supervise: '%s' is not a valid IPv4 address\n", addr);
 				return -1;
 			}
 #endif
@@ -175,18 +175,18 @@ static int bind_socket(const char *addr, unsigned short port, unsigned int backl
 
 
 	if (-1 == (fcgi_fd = socket(socket_type, SOCK_STREAM, 0))) {
-		fprintf(stderr, "spawn-fcgi: couldn't create socket: %s\n", strerror(errno));
+		fprintf(stderr, "spawn-supervise: couldn't create socket: %s\n", strerror(errno));
 		return -1;
 	}
 
 	val = 1;
 	if (setsockopt(fcgi_fd, SOL_SOCKET, SO_REUSEADDR, &val, sizeof(val)) < 0) {
-		fprintf(stderr, "spawn-fcgi: couldn't set SO_REUSEADDR: %s\n", strerror(errno));
+		fprintf(stderr, "spawn-supervise: couldn't set SO_REUSEADDR: %s\n", strerror(errno));
 		return -1;
 	}
 
 	if (-1 == bind(fcgi_fd, fcgi_addr, servlen)) {
-		fprintf(stderr, "spawn-fcgi: bind failed: %s\n", strerror(errno));
+		fprintf(stderr, "spawn-supervise: bind failed: %s\n", strerror(errno));
 		return -1;
 	}
 
@@ -195,7 +195,7 @@ static int bind_socket(const char *addr, unsigned short port, unsigned int backl
 			if (0 == uid) uid = -1;
 			if (0 == gid) gid = -1;
 			if (-1 == chown(unixsocket, uid, gid)) {
-				fprintf(stderr, "spawn-fcgi: couldn't chown socket: %s\n", strerror(errno));
+				fprintf(stderr, "spawn-supervise: couldn't chown socket: %s\n", strerror(errno));
 				close(fcgi_fd);
 				unlink(unixsocket);
 				return -1;
@@ -203,7 +203,7 @@ static int bind_socket(const char *addr, unsigned short port, unsigned int backl
 		}
 
 		if (-1 != mode && -1 == chmod(unixsocket, mode)) {
-			fprintf(stderr, "spawn-fcgi: couldn't chmod socket: %s\n", strerror(errno));
+			fprintf(stderr, "spawn-supervise: couldn't chmod socket: %s\n", strerror(errno));
 			close(fcgi_fd);
 			unlink(unixsocket);
 			return -1;
@@ -211,7 +211,7 @@ static int bind_socket(const char *addr, unsigned short port, unsigned int backl
 	}
 
 	if (-1 == listen(fcgi_fd, backlog)) {
-		fprintf(stderr, "spawn-fcgi: listen failed: %s\n", strerror(errno));
+		fprintf(stderr, "spawn-supervise: listen failed: %s\n", strerror(errno));
 		return -1;
 	}
 
@@ -260,7 +260,7 @@ static int fcgi_spawn_connection(char *appPath, char **appArgv, int fcgi_fd, int
                     if (max_fd != STDERR_FILENO) dup2(max_fd, STDERR_FILENO);
                     if (max_fd != STDOUT_FILENO && max_fd != STDERR_FILENO) close(max_fd);
                 } else {
-                    fprintf(log, "spawn-fcgi: couldn't open and redirect stdout/stderr to '/dev/null': %s\n", strerror(errno));
+                    fprintf(log, "spawn-supervise: couldn't open and redirect stdout/stderr to '/dev/null': %s\n", strerror(errno));
                     exit(errno);
                 }
             }
@@ -283,14 +283,14 @@ static int fcgi_spawn_connection(char *appPath, char **appArgv, int fcgi_fd, int
                 execl("/bin/sh", "sh", "-c", b, (char *)NULL);
             }
 
-            fprintf(log, "spawn-fcgi: exec failed: %s\n", strerror(errno));
+            fprintf(log, "spawn-supervise: exec failed: %s\n", strerror(errno));
             exit(errno);
 
             break;
         }
     case -1:
         /* error */
-        fprintf(log, "spawn-fcgi: fork failed: %s\n", strerror(errno));
+        fprintf(log, "spawn-supervise: fork failed: %s\n", strerror(errno));
         rc = -1;
         break;
     default:
@@ -301,21 +301,21 @@ static int fcgi_spawn_connection(char *appPath, char **appArgv, int fcgi_fd, int
 
         switch (waitpid(child, &status, WNOHANG)) {
         case 0:
-            fprintf(log, "spawn-fcgi: child spawned successfully: PID: %d\n", child);
+            fprintf(log, "spawn-supervise: child spawned successfully: PID: %d\n", child);
             break;
         case -1:
-            fprintf(log, "spawn-fcgi: waitpid failed: %s\n", strerror(errno));
+            fprintf(log, "spawn-supervise: waitpid failed: %s\n", strerror(errno));
             rc = -2;
             break;
         default:
             if (WIFEXITED(status)) {
-                fprintf(log, "spawn-fcgi: child exited: %s\n", strerror(WEXITSTATUS(status)));
+                fprintf(log, "spawn-supervise: child exited: %s\n", strerror(WEXITSTATUS(status)));
                 rc = -3;
             } else if (WIFSIGNALED(status)) {
-                fprintf(log, "spawn-fcgi: child signaled: %d\n", WTERMSIG(status));
+                fprintf(log, "spawn-supervise: child signaled: %d\n", WTERMSIG(status));
                 rc = -4;
             } else {
-                fprintf(log, "spawn-fcgi: child died somehow: exit status = %d\n", status);
+                fprintf(log, "spawn-supervise: child died somehow: exit status = %d\n", status);
                 rc = -5;
             }
         }
@@ -340,13 +340,13 @@ static int find_user_group(const char *user, const char *group, uid_t *uid, gid_
 
 		if (my_uid <= 0 || *endptr) {
 			if (NULL == (my_pwd = getpwnam(user))) {
-				fprintf(stderr, "spawn-fcgi: can't find user name %s\n", user);
+				fprintf(stderr, "spawn-supervise: can't find user name %s\n", user);
 				return -1;
 			}
 			my_uid = my_pwd->pw_uid;
 
 			if (my_uid == 0) {
-				fprintf(stderr, "spawn-fcgi: I will not set uid to 0\n");
+				fprintf(stderr, "spawn-supervise: I will not set uid to 0\n");
 				return -1;
 			}
 
@@ -362,13 +362,13 @@ static int find_user_group(const char *user, const char *group, uid_t *uid, gid_
 
 		if (my_gid <= 0 || *endptr) {
 			if (NULL == (my_grp = getgrnam(group))) {
-				fprintf(stderr, "spawn-fcgi: can't find group name %s\n", group);
+				fprintf(stderr, "spawn-supervise: can't find group name %s\n", group);
 				return -1;
 			}
 			my_gid = my_grp->gr_gid;
 
 			if (my_gid == 0) {
-				fprintf(stderr, "spawn-fcgi: I will not set gid to 0\n");
+				fprintf(stderr, "spawn-supervise: I will not set gid to 0\n");
 				return -1;
 			}
 		}
@@ -376,7 +376,7 @@ static int find_user_group(const char *user, const char *group, uid_t *uid, gid_
 		my_gid = my_pwd->pw_gid;
 
 		if (my_gid == 0) {
-			fprintf(stderr, "spawn-fcgi: I will not set gid to 0\n");
+			fprintf(stderr, "spawn-supervise: I will not set gid to 0\n");
 			return -1;
 		}
 	}
@@ -395,7 +395,7 @@ static void show_version () {
 
 static void show_help () {
 	write(1, CONST_STR_LEN(
-		"Usage: spawn-fcgi [options] [-- <fcgiapp> [fcgi app arguments]]\n" \
+		"Usage: spawn-supervise [options] [-- <fcgiapp> [fcgi app arguments]]\n" \
 		"\n" \
 		PACKAGE_DESC \
 		"\n" \
@@ -523,13 +523,13 @@ int main(int argc, char **argv) {
         case 'a': addr = optarg;/* ip addr */ break;
         case 'p': port = strtol(optarg, &endptr, 10);/* port */
                   if (*endptr) {
-                      fprintf(stderr, "spawn-fcgi: invalid port: %u\n", (unsigned int) port);
+                      fprintf(stderr, "spawn-supervise: invalid port: %u\n", (unsigned int) port);
                       return -1;
                   }
                   break;
         case 'b': backlog = strtol(optarg, &endptr, 10);/* backlog */
                   if (*endptr) {
-                      fprintf(stderr, "spawn-fcgi: invalid backlog: %u\n", (unsigned int) backlog);
+                      fprintf(stderr, "spawn-supervise: invalid backlog: %u\n", (unsigned int) backlog);
                       return -1;
                   }
                   break;
@@ -560,26 +560,26 @@ int main(int argc, char **argv) {
     }
 
     if (NULL == fcgi_app && NULL == fcgi_app_argv) {
-        fprintf(stderr, "spawn-fcgi: no FastCGI application given\n");
+        fprintf(stderr, "spawn-supervise: no FastCGI application given\n");
         return -1;
     }
 
     if (0 == port && NULL == unixsocket) {
-        fprintf(stderr, "spawn-fcgi: no socket given (use either -p or -s)\n");
+        fprintf(stderr, "spawn-supervise: no socket given (use either -p or -s)\n");
         return -1;
     } else if (0 != port && NULL != unixsocket) {
-        fprintf(stderr, "spawn-fcgi: either a Unix domain socket or a TCP-port, but not both\n");
+        fprintf(stderr, "spawn-supervise: either a Unix domain socket or a TCP-port, but not both\n");
         return -1;
     }
 
     if (unixsocket && strlen(unixsocket) > sizeof(un.sun_path) - 1) {
-        fprintf(stderr, "spawn-fcgi: path of the Unix domain socket is too long\n");
+        fprintf(stderr, "spawn-supervise: path of the Unix domain socket is too long\n");
         return -1;
     }
 
     /* SUID handling */
     if (!i_am_root && issetugid()) {
-        fprintf(stderr, "spawn-fcgi: Are you nuts? Don't apply a SUID bit to this binary\n");
+        fprintf(stderr, "spawn-supervise: Are you nuts? Don't apply a SUID bit to this binary\n");
         return -1;
     }
 
@@ -591,7 +591,7 @@ int main(int argc, char **argv) {
     pid_fd = open(pid_file, O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
     //pid_fd = open(pid_file, O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
     if (pid_fd == -1) {
-        fprintf(stderr, "spawn-fcgi: opening file '%s' failed: %s\n", pid_file, strerror(errno));
+        fprintf(stderr, "spawn-supervise: opening file '%s' failed: %s\n", pid_file, strerror(errno));
         return -1;
     }
 
@@ -603,7 +603,7 @@ int main(int argc, char **argv) {
     }
     log_fp = fopen(log_file, "w+");
     if (log_fp == NULL) {
-        fprintf(stderr, "spawn-fcgi: opening file '%s' failed: %s\n", log_file, strerror(errno));
+        fprintf(stderr, "spawn-supervise: opening file '%s' failed: %s\n", log_file, strerror(errno));
         return -1;
     }
 
@@ -623,7 +623,7 @@ int main(int argc, char **argv) {
             return -1;
 
         if (uid != 0 && gid == 0) {
-            fprintf(stderr, "spawn-fcgi: WARNING: couldn't find the user for uid %i and no group was specified, so only the user privileges will be dropped\n", (int) uid);
+            fprintf(stderr, "spawn-supervise: WARNING: couldn't find the user for uid %i and no group was specified, so only the user privileges will be dropped\n", (int) uid);
         }
 
         if (0 == sockuid) sockuid = uid;
@@ -645,11 +645,11 @@ int main(int argc, char **argv) {
 
         if (changeroot) {
             if (-1 == chroot(changeroot)) {
-                fprintf(stderr, "spawn-fcgi: chroot('%s') failed: %s\n", changeroot, strerror(errno));
+                fprintf(stderr, "spawn-supervise: chroot('%s') failed: %s\n", changeroot, strerror(errno));
                 return -1;
             }
             if (-1 == chdir("/")) {
-                fprintf(stderr, "spawn-fcgi: chdir('/') failed: %s\n", strerror(errno));
+                fprintf(stderr, "spawn-supervise: chdir('/') failed: %s\n", strerror(errno));
                 return -1;
             }
         }
@@ -667,7 +667,7 @@ int main(int argc, char **argv) {
     }
 
     if (fcgi_dir && -1 == chdir(fcgi_dir)) {
-        fprintf(stderr, "spawn-fcgi: chdir('%s') failed: %s\n", fcgi_dir, strerror(errno));
+        fprintf(stderr, "spawn-supervise: chdir('%s') failed: %s\n", fcgi_dir, strerror(errno));
         return -1;
     }
 
@@ -676,7 +676,7 @@ int main(int argc, char **argv) {
     /* fork the monitor process */
     pid_t child = fork();
     if ( child < 0 ) {
-        fprintf(stderr, "spawn-fcgi: fork failed: %s\n", strerror(errno));
+        fprintf(stderr, "spawn-supervise: fork failed: %s\n", strerror(errno));
         return -1;
     }
 
@@ -693,7 +693,7 @@ int main(int argc, char **argv) {
             if (max_fd != STDERR_FILENO) dup2(max_fd, STDERR_FILENO);
             if (max_fd != STDOUT_FILENO && max_fd != STDERR_FILENO && max_fd != STDIN_FILENO) close(max_fd);
         } else {
-            fprintf(stderr, "spawn-fcgi: couldn't open and redirect stdout/stderr to '/dev/null': %s\n", strerror(errno));
+            fprintf(stderr, "spawn-supervise: couldn't open and redirect stdout/stderr to '/dev/null': %s\n", strerror(errno));
             exit(errno);
         }
 
@@ -708,11 +708,11 @@ int main(int argc, char **argv) {
         ret = waitpid(child, &status, WNOHANG);
         if (ret > 0) {
             if (WIFEXITED(status)) {
-                fprintf(stderr, "spawn-fcgi: monitor process exited: %s\n", strerror(WEXITSTATUS(status)));
+                fprintf(stderr, "spawn-supervise: monitor process exited: %s\n", strerror(WEXITSTATUS(status)));
             } else if (WIFSIGNALED(status)) {
-                fprintf(stderr, "spawn-fcgi: monitor process signaled: %d\n", WTERMSIG(status));
+                fprintf(stderr, "spawn-supervise: monitor process signaled: %d\n", WTERMSIG(status));
             } else {
-                fprintf(stderr, "spawn-fcgi: monitor process died somehow: exit status = %d\n", status);
+                fprintf(stderr, "spawn-supervise: monitor process died somehow: exit status = %d\n", status);
             }
 
             return -1;
