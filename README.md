@@ -27,16 +27,16 @@ Build
 
 If ./configure is missing, run ./autogen.sh.
 
-  ./configure
-  make
-  make install
+  ./configure<br/>
+  make<br/>
+  make install<br/>
 
 Alternatively you can use the cmake build system (may not work
 on every platform):
 
-  cmake .
-  make
-  make install
+  cmake .<br/>
+  make   <br/>
+  make install<br/>
 
 
 
