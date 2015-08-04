@@ -11,14 +11,13 @@ spawn-supervise
 
 Usage
 =====
-
+···
 spawn-supervise -u user -p port -F fork_number -- application_main arguments
-
 fork_number:指要fork多少个worker进程
 port: 所有的worker进程共同监听一个端口，各自accept数据包。
 application_main： 用户的二进制程序， 一般包含一个while的死循环，并阻塞在epoll_wait或其他事件上面。
 arguments： 用户程序的参数
-
+···
 
 Features
 --------
