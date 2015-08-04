@@ -1,0 +1,162 @@
+#!/bin/bash
+#
+# application        Startup script for application
+#
+# chkconfig: - 83 17
+# servicename: application
+# description: application is an ad application server
+#
+### BEGIN INIT INFO
+# Required-Start: $local_fs $network
+# Required-Stop: $local_fs $network
+# Default-Start: 2 3 4 5
+# Default-Stop: 0 1 6
+# Short-Description: start and stop application
+### END INIT INFO
+
+# Source function library.
+. /etc/rc.d/init.d/functions
+
+SPAWN_SUPERVISE="/usr/bin/spawn-fcgi"
+SERVICE_BINARY="/path_to_your_application/bin/application"
+SERVICE_ARGS="--flagfile=/path_to_your_application/conf/application.gflags"
+
+SERVICE=${SERVICE_BINARY##*/}
+PID_FILE="/var/run/$SERVICE.pid"
+FORK_NUM=32
+SPAWN_ARGS="-u user -p 80 -F $FORK_NUM -- "
+SERVICE_INIT_TIME=10
+SERVICE_EXIT_TIME=8
+KILL_BATCH=4
+
+
+RETVAL=0
+start() {
+    echo -n $"Starting $SERVICE: "
+    daemon --pidfile=${PID_FILE} $SPAWN_SUPERVISE $SPAWN_ARGS $SERVICE_BINARY $SERVICE_ARGS
+    RETVAL=$?
+    echo
+}
+
+stop() {
+    echo -n $"Stopping $SERVICE: "
+    echo ${PID_FILE}
+
+    ppid=`cat $PID_FILE`
+    checkpid $ppid
+    RETVAL=$?
+    if [ $RETVAL -ne 0 ]; then
+        echo_failure
+        echo
+	return
+    fi
+
+    kill $ppid
+    RETVAL=$?
+    [ $RETVAL = 0 ] && rm -f ${PID_FILE}
+
+    killall -SIGINT ${SERVICE}
+
+    sleep $SERVICE_EXIT_TIME
+    pids=`pidof $SERVICE`
+    RETVAL=$?
+    if [ $RETVAL -eq 0 ]; then
+        echo_failure
+    else
+        echo_success
+    fi
+
+    echo
+}
+
+reload() {
+    echo -n $"Reloading $SERVICE: "
+    ppid=`cat $PID_FILE`
+    checkpid $ppid
+    RETVAL=$?
+    if [ $RETVAL -ne 0 ]; then
+        echo_failure
+        echo
+        exit 1
+    fi
+
+    pids=`pidof $SERVICE`
+    RETVAL=$?
+    if [ $RETVAL -ne 0 ]; then
+        echo_failure
+        echo
+        exit $RETVAL
+    fi
+
+    INDEX=0
+    for pid in $pids
+    do
+        if [ $INDEX -eq $KILL_BATCH ]; then
+            INDEX=0
+            sleep $SERVICE_INIT_TIME
+        fi
+        kill -SIGINT $pid
+        INDEX=$[INDEX + 1]
+    done
+
+    new_pids=`pidof $SERVICE`
+    RETVAL=$?
+    if [ $RETVAL -ne 0 ]; then
+        echo_failure
+        echo
+        exit $RETVAL
+    fi
+
+    pids_=${pids// /\\n}
+    new_pids_=${new_pids// /\\n}
+    intersect=`echo -e $newpids_ $pids_ | sort | uniq -d`
+    if [ "$intersect" ]; then
+        echo "PID(s) not killed:"
+        echo $interset
+        echo_failure
+    else
+        echo_success
+    fi
+
+    echo
+}
+
+
+rh_status() {
+    status -p ${PID_FILE} ${SERVICE}
+}
+
+# See how we were called.
+case "$1" in
+    start)
+        rh_status >/dev/null 2>&1 && exit 0
+        start
+        ;;
+    stop)
+        stop
+        ;;
+    status)
+        rh_status
+        RETVAL=$?
+        ;;
+    restart)
+        stop
+
+        pids=`pidof $SERVICE`
+        while [ $? -eq 0 ]
+        do
+            sleep 1
+            pids=`pidof $SERVICE`
+        done
+
+        start
+        ;;
+    reload)
+        reload
+        ;;
+    *)
+        echo $"Usage: $SERVICE {start|stop|restart|reload|status|help}"
+        RETVAL=2
+esac
+
+exit $RETVAL
