@@ -15,7 +15,7 @@ Features
 - binds to IPv4/IPv6 and Unix domain sockets
 - supports privilege separation: chmod/chown socket, drop to uid/gid
 - supports chroot
-- supports daemontools supervise
+- supports supervise
 
 Build
 =====
