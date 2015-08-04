@@ -12,7 +12,7 @@ spawn-supervise
 Usage
 =====
 
-spawn-supervise -u user -p port -F fork_number -- application_binary application_arguments
+spawn-supervise -u user -p port -F fork_number -- application_main arguments
 
 
 Features
