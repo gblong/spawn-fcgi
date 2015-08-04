@@ -17,7 +17,7 @@
 # Source function library.
 . /etc/rc.d/init.d/functions
 
-SPAWN_SUPERVISE="/usr/bin/spawn-fcgi"
+SPAWN_SUPERVISE="/usr/bin/spawn-supervice"
 SERVICE_BINARY="/path_to_your_application/bin/application"
 SERVICE_ARGS="--flagfile=/path_to_your_application/conf/application.gflags"
 
