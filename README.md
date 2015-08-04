@@ -37,4 +37,4 @@ on every platform):
 Usage
 =====
 
-See man page.
+spawn-supervise -u user -p port -F fork_number -- application_binary application_arguments
