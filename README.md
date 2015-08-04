@@ -1,6 +1,6 @@
 
 ==========
-spawn-fcgi
+spawn-supervise
 ==========
 
 由开源的spawn-fcgi发展而来(http://redmine.lighttpd.net/projects/spawn-fcgi)。
