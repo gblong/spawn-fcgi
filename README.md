@@ -1,7 +1,6 @@
 
 ==========
-#spawn-supervise
-
+###spawn-supervise
 spawn-supervise的主要作用
 1. 拉起多个worker进程并进行监控，worker进程异常退出后能被自动拉起;
 2. 平滑的热升级。Worker进程通常有多个，在升级时，可以先部署新程序，然后批量kill掉老的workder进程，supervise 进程在收到子进程的退出信号后，会重新拉起worker进程，而新拉起的worker进程已经是更新后的进程。这样新老进程并存，达到了无缝热升级的效果。
